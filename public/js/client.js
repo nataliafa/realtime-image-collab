@@ -6,7 +6,7 @@ let webSocket;
 
 function connectWebSocket(id) {
 
-  webSocket = new WebSocket(`ws://${window.location.host}/pic/${id}`);
+  webSocket = new WebSocket(`wss://${window.location.host}/pic/${id}`);
 
   webSocket.addEventListener('open', () => {
     console.log('Вэбсокет соединение открыто');
