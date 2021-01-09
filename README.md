@@ -13,11 +13,11 @@
 
 Клиентская часть реализована на JavaScript, Drag & drop изображений, рисование Canvas, DOM, коллективное рисование и комментирование взаимодействие с сервером по websocket
 
-+ [ссылка на проект](http://begethost7.beget.tech/draw/)
++ [ссылка на проект](natalia-realtime-image-collab.herokuapp.com)
 
 ## Интерфейс
 
-![Компоненты](images/components.jpg)
+![Компоненты](public/images/components.jpg)
 
 
 
