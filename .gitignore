@@ -1,6 +1,6 @@
 .idea/
 tmp/
-public/uploads
+public/uploads/*
 !public/uploads/.keep
 
 # Logs
