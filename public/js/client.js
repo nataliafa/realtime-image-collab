@@ -7,7 +7,7 @@ let webSocket;
 function connectWebSocket(id) {
 
   let webSocketProtocol = 'ws';
-  if (new URL(url).protocol === 'https') {
+  if (new URL(url).protocol === 'https:') {
     webSocketProtocol = 'wss';
   }
 
