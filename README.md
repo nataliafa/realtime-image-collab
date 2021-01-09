@@ -13,7 +13,7 @@
 
 Клиентская часть реализована на JavaScript, Drag & drop изображений, рисование Canvas, DOM, коллективное рисование и комментирование взаимодействие с сервером по websocket
 
-+ [ссылка на проект](natalia-realtime-image-collab.herokuapp.com)
++ [ссылка на проект](https://natalia-realtime-image-collab.herokuapp.com)
 
 ## Интерфейс
 
