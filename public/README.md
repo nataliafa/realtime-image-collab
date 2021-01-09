@@ -17,7 +17,7 @@
 
 ## Интерфейс
 
-![Компоненты](res/components.jpg)
+![Компоненты](images/components.jpg)
 
 
 

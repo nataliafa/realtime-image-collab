@@ -17,7 +17,7 @@ body {
 .wrap {
   width: 100%;
   height: 100vh;
-  background: url(../i/back.png) repeat,
+  background: url(../images/back.png) repeat,
               radial-gradient(circle at top center, #707885, #252c36);
   text-align: center;
   user-select: none;
@@ -115,7 +115,7 @@ body {
   width: 2.1rem;
   padding: 0;
   background-color: #7b8c9c;
-  background: url(../i/dotes.png) no-repeat center #7b8c9c;
+  background: url(../images/dotes.png) no-repeat center #7b8c9c;
   cursor: move;
 }
 
@@ -156,7 +156,7 @@ body {
 }
 
 .menu__icon {
-  background-image: url(../i/spritesheet.png);
+  background-image: url(../images/spritesheet.png);
   background-repeat: no-repeat;
 }
 
@@ -222,7 +222,7 @@ body {
 }
 
 .comments-tools:after, .draw-tools:after, .share-tools:after {
-  content: url(../i/triangle.png);
+  content: url(../images/triangle.png);
   position: absolute;
   top: 2.6rem;
   left: -0.7rem;
@@ -313,7 +313,7 @@ body {
   position: relative;
   width: 2.4rem;
   height: 2.5rem;
-  background-image: url(../i/spritesheet.png);
+  background-image: url(../images/spritesheet.png);
   background-position: -110px 62px;
 }
 
@@ -463,7 +463,7 @@ body {
   top: -1rem;
   width: 2.8rem;
   height: 2.5rem;   
-  background-image: url(../i/comment.png);
+  background-image: url(../images/comment.png);
   background-repeat: no-repeat;
   cursor: pointer;
 }

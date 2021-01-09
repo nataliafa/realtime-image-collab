@@ -1,24 +1,24 @@
 //-----------WEBSOCKET---------------
 
-const url = 'https://neto-api.herokuapp.com';
+const url = window.location.origin;
 
 let webSocket;
 
 function connectWebSocket(id) {
 
-webSocket = new WebSocket(`wss://neto-api.herokuapp.com/pic/${id}`);
-  
+  webSocket = new WebSocket(`ws://${window.location.host}/pic/${id}`);
+
   webSocket.addEventListener('open', () => {
     console.log('Вэбсокет соединение открыто');
   });
-  
+
   webSocket.addEventListener('message', (event) => {
 
     const dataParse = JSON.parse(event.data);
 
     if (dataParse.event === "pic") {
       const {pic} = dataParse;
-  
+
       showImage();
       setSrcImage(pic.url);
       hideLoader();
@@ -61,33 +61,35 @@ webSocket = new WebSocket(`wss://neto-api.herokuapp.com/pic/${id}`);
       Object.keys(dataParse.comment).forEach(id => {
         let isExist = false;
         const comments = document.querySelectorAll('.comment');
-  
-        comments.forEach(comment => { 
+
+        comments.forEach(comment => {
           if (comment.dataset.id === dataParse.comment.id) {
-              isExist = true;
+            isExist = true;
           }
         })
 
-        if (isExist) {return};
+        if (isExist) {
+          return;
+        }
 
         createFormsAndComments([dataParse.comment]);
       })
-        
+
     } else if (dataParse.event === "mask") {
       drawMask(dataParse.url);
-      
+
     } else if (dataParse.event === "error") {
       console.log('Произошла ошибка');
       console.log(event);
     }
   });
-  
+
   //	закрываем соединение веб сокет
   webSocket.addEventListener('close', event => {
     console.log('Вэбсокет соединение закрыто');
     console.log(event);
   });
-  
+
   window.addEventListener('beforeunload', () => {
     webSocket.close(1000, 'Работа закончена');
   });
@@ -99,16 +101,16 @@ function createFormsAndComments(comments) {
   comments.forEach(comment => {
     let needCreateNewForm = true;
     const {left, top, message, timestamp, id} = comment;
-    
+
     document.querySelectorAll('.comments__form').forEach(form => {
       // если уже существует форма с заданными координатами left и top, добавляем сообщение в эту форму
       if (+form.dataset.left === left && +form.dataset.top === top) {
         const newComment = addNewComment(message, timestamp, id);
         const commentsBody = form.querySelector('.comments__body');
         commentsBody.insertBefore(newComment, commentsBody.querySelector('.comments__input'));
-      
+
         needCreateNewForm = false;
-      }				
+      }
     });
 
     if (needCreateNewForm) {
@@ -137,7 +139,7 @@ document.querySelector('#comments-off').addEventListener('change', openAndCloseF
 function openAndCloseForms() {
   if (document.querySelector('#comments-on').checked) {
     document.querySelectorAll('.comments__form').forEach(form => {
-      form.style.display = ''; 
+      form.style.display = '';
     });
   } else {
     document.querySelectorAll('.comments__form').forEach(form => {
@@ -154,6 +156,7 @@ function changeSizeCommentsWrap() {
   document.querySelector('.comments__wrap').style.width = `${document.querySelector('.current-image').width}px`;
   document.querySelector('.comments__wrap').style.height = `${document.querySelector('.current-image').height}px`;
 }
+
 // скрыть comments wrap
 function hideCommentsWrap() {
   document.querySelector('.comments__wrap').style.display = 'none';
@@ -169,7 +172,7 @@ function getMarkerHeight() {
   let result;
   if (document.querySelector('.comments__marker-checkbox')) {
     let el = getComputedStyle(document.querySelector('.comments__marker-checkbox'));
-    result = el.height.split('px')[0]/2;
+    result = el.height.split('px')[0] / 2;
   } else {
     result = 18;
   }
@@ -181,7 +184,7 @@ function getMarkerWidth() {
   let result;
   if (document.querySelector('.comments__marker-checkbox')) {
     let el = getComputedStyle(document.querySelector('.comments__marker-checkbox'));
-    result = el.width.split('px')[0]/2 + el.left.split('px')[0]/2;
+    result = el.width.split('px')[0] / 2 + el.left.split('px')[0] / 2;
   } else {
     result = 12.5;
   }
@@ -198,7 +201,7 @@ function createForm(coordX, coordY, message, timestamp, id) {
 
   const input = document.createElement('input');
   input.classList.add('comments__marker-checkbox');
-  input.type="checkbox";
+  input.type = "checkbox";
 
   const commentsBody = document.createElement('div');
   commentsBody.classList.add('comments__body');
@@ -206,19 +209,19 @@ function createForm(coordX, coordY, message, timestamp, id) {
   const textarea = document.createElement('textarea');
   textarea.classList.add('comments__input');
   textarea.type = "text";
-  textarea.placeholder="Напишите ответ...";
+  textarea.placeholder = "Напишите ответ...";
 
   const close = document.createElement('input');
   close.classList.add('comments__close');
-  close.type="button";
-  close.value="Закрыть";
+  close.type = "button";
+  close.value = "Закрыть";
 
   const submit = document.createElement('input');
   submit.classList.add('comments__submit');
-  submit.type="submit";
-  submit.value="Отправить";
+  submit.type = "submit";
+  submit.value = "Отправить";
 
-  if(document.querySelector('#comments-off').checked) {
+  if (document.querySelector('#comments-off').checked) {
     form.style.display = 'none';
   }
 
@@ -235,11 +238,13 @@ function createForm(coordX, coordY, message, timestamp, id) {
   }
 
   submit.addEventListener('click', (event) => sendMessage(textarea.value, coordX, coordY));
-  close.addEventListener('click', () => { input.checked = false });
+  close.addEventListener('click', () => {
+    input.checked = false
+  });
   textarea.addEventListener('focus', textareaFocus);
 
   function textareaFocus() {
-    textarea.value ='';
+    textarea.value = '';
   }
 
   const sendMessage = (message, left, top) => {
@@ -249,7 +254,7 @@ function createForm(coordX, coordY, message, timestamp, id) {
     }
     const comment = 'message=' + encodeURIComponent(message) + '&left=' + encodeURIComponent(left) + '&top=' + encodeURIComponent(top);
     const imageId = getUrlImageId();
-    
+
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${url}/pic/${imageId}/comments`);
     xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
@@ -260,13 +265,13 @@ function createForm(coordX, coordY, message, timestamp, id) {
 
     xhr.addEventListener('load', () => {
       if (xhr.status === 200) {
-          //  console.log(JSON.parse(xhr.responseText));
-          loader.remove();
-          textarea.value = textarea.placeholder;
+        //  console.log(JSON.parse(xhr.responseText));
+        loader.remove();
+        textarea.value = textarea.placeholder;
       } else {
         console.log('комментарий не отправлен');
       }
-    });	
+    });
   }
 
   return form;
@@ -285,7 +290,7 @@ function addNewComment(message, timestamp, id) {
   const commentMessage = document.createElement('p');
   commentMessage.classList.add('comment__message');
   commentMessage.textContent = `${cutComment(message)}`;
-  
+
   comment.appendChild(commentTime);
   comment.appendChild(commentMessage);
 
@@ -295,7 +300,7 @@ function addNewComment(message, timestamp, id) {
 // если коментарий не взлезает в строку добавляет пробел
 function cutComment(string) {
   if (string.length > 25) {
-    let first = string.substring(0,26);
+    let first = string.substring(0, 26);
     let last = cutComment(string.substring(26));
     return `${first} ${last}`;
   } else {
@@ -339,7 +344,7 @@ function addLoader() {
 
 // делает переданную форму активной
 function makeActiveForm(currentForm) {
-  document.querySelectorAll('.comments__form').forEach( form => {
+  document.querySelectorAll('.comments__form').forEach(form => {
     form.style.zIndex = 5;
     if (form !== currentForm) {
       if (form.querySelectorAll('.comment').length < 1) {
@@ -359,8 +364,8 @@ function setForm(coordX, coordY, message, timestamp, id) {
   form.style.left = coordX + 'px';
   form.style.top = coordY + 'px';
   form.dataset.left = coordX;
-  form.dataset.top = coordY;	
-  document.querySelector('.comments__wrap').appendChild(form); 
+  form.dataset.top = coordY;
+  document.querySelector('.comments__wrap').appendChild(form);
 
   makeActiveForm(form);
 }
@@ -371,12 +376,12 @@ function addForm(coordX, coordY) {
     if (event.target.classList.contains('comments__wrap') || event.target.classList.contains('mask')) {
 
       // координаты меняем с учетом позиции маркера
-      coordX -= getMarkerWidth(); 
-      coordY  -= getMarkerHeight(); 
-  
+      coordX -= getMarkerWidth();
+      coordY -= getMarkerHeight();
+
       setForm(coordX, coordY);
-      
-    } else if (event.target.classList.contains('comments__marker-checkbox')){
+
+    } else if (event.target.classList.contains('comments__marker-checkbox')) {
 
       const currentForm = event.target.parentElement;
       makeActiveForm(currentForm);
@@ -416,11 +421,11 @@ function setImage(file) {
   const formData = new FormData();
   formData.append('title', file.name);
   formData.append('image', file);
-  
+
   const xhr = new XMLHttpRequest();
   xhr.open('POST', `${url}/pic`);
   xhr.send(formData);
-  
+
   // скрывает изображение и ошибку, показывает loader 
   hideImage();
   hideError();
@@ -432,9 +437,9 @@ function setImage(file) {
   xhr.addEventListener('load', () => {
     if (xhr.status === 200) {
       const data = JSON.parse(xhr.responseText);
-       // console.log(data);
+      // console.log(data);
       // console.log(`Файл ${file.name} сохранен.`);
-        
+
       // меняет в url полученный id
       changeUrl(data.id);
       // устанавливает url в  режиме поделиться
@@ -447,14 +452,17 @@ function setImage(file) {
       hideLoader();
       showError();
     }
-  });	
+  });
 }
 
 //--- Input загрузка изображения ------
 
 // создает input для загрузки изображения
 function createInputUploadImage() {
-  if (document.querySelector('.new > input')) { return };
+  if (document.querySelector('.new > input')) {
+    return
+  }
+  ;
   const input = document.createElement('input');
   input.setAttribute('type', 'file');
   input.setAttribute('class', 'input-image');
@@ -488,7 +496,7 @@ function clickToInput() {
 document.querySelector('.app').addEventListener('drop', handleDrop, false);
 
 // отменяет действие по умолчанию
-function preventDefaults (e) {
+function preventDefaults(e) {
   e.preventDefault();
   e.stopPropagation();
 }
@@ -517,7 +525,7 @@ canvas.classList.add('canvas');
 document.querySelector('.app').appendChild(canvas);
 
 const mask = document.createElement('img');
-mask.src = './pic/transparent.png';
+mask.src = './images/transparent.png';
 mask.classList.add('mask');
 commentsWrap.appendChild(mask);
 
@@ -561,7 +569,7 @@ let curvesNumberToRemoveNextTime = 0;
 // изменить цвет линии
 const colors = document.querySelectorAll('.menu__color');
 for (const color of colors) {
-  color.addEventListener('change',(event)=> changeColor(color));
+  color.addEventListener('change', (event) => changeColor(color));
 }
 
 function changeColor(color) {
@@ -591,7 +599,7 @@ function smoothCurve(points) {
   ctx.moveTo(...points[0]);
 
   for (let i = 1; i < points.length - 1; i++) {
-      smoothCurveBetween(points[i], points[i + 1]);
+    smoothCurveBetween(points[i], points[i + 1]);
   }
   ctx.stroke();
 }
@@ -602,19 +610,23 @@ function makePoint(x, y) {
 }
 
 canvas.addEventListener('mousedown', canvasMouseDown);
-canvas.addEventListener('mouseup', () => { drawing = false });
-canvas.addEventListener('mouseleave', () => { drawing = false });
+canvas.addEventListener('mouseup', () => {
+  drawing = false
+});
+canvas.addEventListener('mouseleave', () => {
+  drawing = false
+});
 canvas.addEventListener('mousemove', canvasMouseMove);
 
 function canvasMouseDown(event) {
   if (document.querySelector('.draw').dataset.state !== 'selected') return;
   drawing = true;
 
-  const curve = []; 
+  const curve = [];
   curve.color = currentColor;
 
-  curve.push(makePoint(event.offsetX, event.offsetY)); 
-  curves.push(curve); 
+  curve.push(makePoint(event.offsetX, event.offsetY));
+  curves.push(curve);
   needsRepaint = true;
 }
 
@@ -654,34 +666,34 @@ function eraseLine() {
 const trottledSendMask = throttleCanvas(sendMaskState, 1000);
 
 function sendMaskState() {
-	canvas.toBlob(function (blob) {
-		webSocket.send(blob);
-		ctx.clearRect(0, 0, canvas.width, canvas.height);
-	});
+  canvas.toBlob(function (blob) {
+    webSocket.send(blob);
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+  });
 }
 
 // посылает данные на сервер не чаще 1 раза в несколько секунд
 function throttleCanvas(callback, delay) {
-	let isWaiting = false;
-	return function () {
-		if (!isWaiting) {
-			isWaiting = true;
-			setTimeout(() => {
-				callback();
-				isWaiting = false;
-			}, delay);
-		}
-	}
+  let isWaiting = false;
+  return function () {
+    if (!isWaiting) {
+      isWaiting = true;
+      setTimeout(() => {
+        callback();
+        isWaiting = false;
+      }, delay);
+    }
+  }
 }
 
-function tick () {
-	// Отрисовываем 
-	if(needsRepaint) {
-		repaint();
-		needsRepaint = false;
-	}
+function tick() {
+  // Отрисовываем
+  if (needsRepaint) {
+    repaint();
+    needsRepaint = false;
+  }
 
-	window.requestAnimationFrame(tick);
+  window.requestAnimationFrame(tick);
 }
 
 tick();
@@ -693,13 +705,13 @@ document.querySelector('.menu_copy').addEventListener('click', copyUrl);
 
 // возвращает id изображения из url
 function getUrlImageId() {
-  let imageId =  window.location.href.split('?')[1];
+  let imageId = window.location.href.split('?')[1];
   return imageId ? imageId = imageId.split('=')[1] : false;
 }
 
 // изменить id изображения в url
 function changeUrl(id) {
-  let link =  window.location.href.split('?')[0];
+  let link = window.location.href.split('?')[0];
   window.location.href = `${link}?imageId=${id}`;
 }
 
@@ -720,7 +732,7 @@ function copyUrl() {
     //console.log(`Копирование ссылки ${msg}`);
   } catch (err) {
     console.log(`Ошибка: ${err}`);
-  }	
+  }
 }
 
 
@@ -745,7 +757,9 @@ function menuSelected(mode) {
   document.querySelector('.menu').dataset.state = 'selected';
   mode.dataset.state = 'selected';
   if (!mode.classList.contains('comments')) {
-    document.querySelectorAll('.comments__marker-checkbox').forEach( marker => { marker.checked = false });
+    document.querySelectorAll('.comments__marker-checkbox').forEach(marker => {
+      marker.checked = false
+    });
   }
 
   if (mode.classList.contains('draw')) {
@@ -763,7 +777,7 @@ function onClickMode(event) {
     clickToInput();
   } else {
     menuSelected(item);
-  } 
+  }
 }
 
 // если меню не хватает длины
@@ -771,8 +785,8 @@ function checkMenuLength() {
   const menu = document.querySelector('.menu');
   const wrap = document.querySelector('.wrap');
   if (menu.offsetHeight > 100) {
-      menu.style.left = '0px';
-      menu.style.left = (wrap.offsetWidth - menu.offsetWidth - 1) + 'px';
+    menu.style.left = '0px';
+    menu.style.left = (wrap.offsetWidth - menu.offsetWidth - 1) + 'px';
   }
 }
 
@@ -781,6 +795,7 @@ function checkMenuLengthTick() {
   checkMenuLength();
   window.requestAnimationFrame(checkMenuLengthTick);
 }
+
 checkMenuLengthTick();
 
 
@@ -806,11 +821,11 @@ function dragElement(elmnt) {
     maxY = wrap.offsetTop + wrap.offsetHeight - elmnt.offsetHeight;
     shiftX = event.pageX - elmnt.getBoundingClientRect().left - window.pageXOffset;
     shiftY = event.pageY - elmnt.getBoundingClientRect().top - window.pageYOffset;
- 
+
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', drop);
   }
-  
+
   function drag(event) {
     // новые позиции
     let x, y;
