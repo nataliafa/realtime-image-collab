@@ -14,12 +14,36 @@ const wss = new WebSocket.Server({server})
 app.use(express.static('public'))
 
 wss.on('connection', function connection(ws, req) {
+  const imageId = path.basename(url.parse(req.url).pathname)
+  const extname = path.extname(imageId)
+  const basename = path.basename(imageId, extname)
+  const maskPrivatePath = path.join(__dirname, `public/uploads/${basename}-mask.png`)
+  const maskPublicPath = `uploads/${basename}-mask.png`
   ws.send(JSON.stringify({
     event: 'pic',
     pic: {
-      url: `uploads/${path.basename(url.parse(req.url).pathname)}`
+      url: `uploads/${imageId}`,
+      mask: maskPublicPath,
+      comments: [
+        {
+          id: '123',
+          left: 200,
+          top: 100,
+          message: 'Hello world!',
+          timestamp: new Date()
+        }
+      ]
     }
   }))
+  ws.on('message', function message(data) {
+    fs.createWriteStream(maskPrivatePath).write(data)
+    fs.access(maskPrivatePath, fs.constants.F_OK, function () {
+      ws.send(JSON.stringify({
+        event: 'mask',
+        url: maskPublicPath
+      }))
+    })
+  });
 })
 
 app.post('/pic', (req, res) => {
@@ -28,7 +52,7 @@ app.post('/pic', (req, res) => {
     if (err) {
       return req.status(500).send(err)
     }
-    const imageId = `${uuidv4()}${path.extname(req.file.originalname)}`
+    const imageId = `${uuidv4().replace(/-/g, '')}${path.extname(req.file.originalname)}`
     const tempPath = path.join(__dirname, req.file.path)
     const targetPath = path.join(__dirname, `./public/uploads/${imageId}`)
     if (req.file.originalname.match(/\.(jpg|JPG|jpeg|JPEG|png|PNG|gif|GIF)$/)) {
