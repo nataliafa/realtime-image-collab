@@ -6,7 +6,7 @@ const express = require('express')
 const multer = require('multer')
 const {v4: uuidv4} = require('uuid')
 const WebSocket = require('ws')
-const {createCanvas, loadImage, createImageData} = require('canvas')
+const {createCanvas, loadImage} = require('canvas')
 const sizeOf = require('image-size')
 
 const app = express()
@@ -62,7 +62,6 @@ wss.on('connection', function connection(ws, req) {
       ctx.drawImage(oldMask, 0, 0, dimensions.width, dimensions.height)
       loadImage(newMaskPath).then((newMask) => {
         ctx.drawImage(newMask, 0, 0, dimensions.width, dimensions.height)
-        fs.rmSync(maskPrivatePath)
         fs.writeFileSync(maskPrivatePath, canvas.toBuffer('image/png'))
         try {
           fs.accessSync(maskPrivatePath, fs.constants.F_OK)
@@ -76,6 +75,12 @@ wss.on('connection', function connection(ws, req) {
       })
     })
   })
+  setInterval(function () {
+    ws.send(JSON.stringify({
+      event: 'mask',
+      url: maskPublicPath
+    }))
+  }, 1000)
 })
 
 app.post('/pic', (req, res) => {
