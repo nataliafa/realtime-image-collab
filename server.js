@@ -6,6 +6,8 @@ const express = require('express')
 const multer = require('multer')
 const {v4: uuidv4} = require('uuid')
 const WebSocket = require('ws')
+const {createCanvas} = require('canvas')
+const sizeOf = require('image-size')
 
 const app = express()
 const server = http.createServer(app);
@@ -17,12 +19,25 @@ wss.on('connection', function connection(ws, req) {
   const imageId = path.basename(url.parse(req.url).pathname)
   const extname = path.extname(imageId)
   const basename = path.basename(imageId, extname)
+  const imagePrivatePath = `public/uploads/${imageId}`
+  const imagePublicPath = `uploads/${imageId}`
   const maskPrivatePath = path.join(__dirname, `public/uploads/${basename}-mask.png`)
   const maskPublicPath = `uploads/${basename}-mask.png`
+
+  fs.access(maskPrivatePath, fs.constants.F_OK, function (err) {
+    if (!err) {
+      return
+    }
+    const dimensions = sizeOf(imagePrivatePath);
+    const canvas = createCanvas(dimensions.width, dimensions.height)
+    const buffer = canvas.toBuffer('image/png')
+    fs.writeFileSync(maskPrivatePath, buffer)
+  })
+
   ws.send(JSON.stringify({
     event: 'pic',
     pic: {
-      url: `uploads/${imageId}`,
+      url: imagePublicPath,
       mask: maskPublicPath,
       comments: [
         {
@@ -37,7 +52,10 @@ wss.on('connection', function connection(ws, req) {
   }))
   ws.on('message', function message(data) {
     fs.createWriteStream(maskPrivatePath).write(data)
-    fs.access(maskPrivatePath, fs.constants.F_OK, function () {
+    fs.access(maskPrivatePath, fs.constants.F_OK, function (err) {
+      if (err) {
+        return
+      }
       ws.send(JSON.stringify({
         event: 'mask',
         url: maskPublicPath
@@ -70,7 +88,7 @@ app.post('/pic', (req, res) => {
           return res.status(500).send(err)
         }
         res.status(403).contentType("text/plain")
-            .end("Only .png, .jpg, .jpeg and gif files are supported")
+          .end("Only .png, .jpg, .jpeg and gif files are supported")
       })
     }
   })
