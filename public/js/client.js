@@ -41,45 +41,24 @@ function connectWebSocket(id) {
       });
 
       if (pic.comments) {
-
-        // массив комментариев
-        const commentsId = Object.keys(pic.comments);
-        const commentsObjs = pic.comments;
-        const comments = [];
-
-        // приведение к массиву комментариев
-        commentsId.forEach(item => {
-          const comment = {};
-          comment.id = item;
-          comment.left = commentsObjs[item].left;
-          comment.top = commentsObjs[item].top;
-          comment.message = commentsObjs[item].message;
-          comment.timestamp = commentsObjs[item].timestamp;
-          comments.push(comment);
-        });
-
-        createFormsAndComments(comments);
+        createFormsAndComments(pic.comments);
       }
 
     } else if (dataParse.event === "comment") {
+      let isExist = false;
+      const comments = document.querySelectorAll('.comment');
 
-      Object.keys(dataParse.comment).forEach(id => {
-        let isExist = false;
-        const comments = document.querySelectorAll('.comment');
-
-        comments.forEach(comment => {
-          if (comment.dataset.id === dataParse.comment.id) {
-            isExist = true;
-          }
-        })
-
-        if (isExist) {
-          return;
+      comments.forEach(comment => {
+        if (comment.dataset.id === dataParse.comment.id) {
+          isExist = true;
         }
-
-        createFormsAndComments([dataParse.comment]);
       })
 
+      if (isExist) {
+        return;
+      }
+
+      createFormsAndComments([dataParse.comment]);
     } else if (dataParse.event === "mask") {
       drawMask(dataParse.url);
 
@@ -257,20 +236,23 @@ function createForm(coordX, coordY, message, timestamp, id) {
     if (textarea.value === textarea.placeholder) {
       return;
     }
-    const comment = 'message=' + encodeURIComponent(message) + '&left=' + encodeURIComponent(left) + '&top=' + encodeURIComponent(top);
+
     const imageId = getUrlImageId();
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', `${url}/pic/${imageId}/comments`);
-    xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
-    xhr.send(comment);
+    xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+    xhr.send(JSON.stringify({
+      message: message,
+      left: left,
+      top: top
+    }));
 
     const loader = addLoader();
     commentsBody.appendChild(loader);
 
     xhr.addEventListener('load', () => {
       if (xhr.status === 200) {
-        //  console.log(JSON.parse(xhr.responseText));
         loader.remove();
         textarea.value = textarea.placeholder;
       } else {

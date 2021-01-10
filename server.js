@@ -3,6 +3,7 @@ const url = require('url')
 const path = require('path')
 const fs = require('fs')
 const express = require('express')
+const bodyParser = require('body-parser')
 const multer = require('multer')
 const {v4: uuidv4} = require('uuid')
 const WebSocket = require('ws')
@@ -14,6 +15,26 @@ const server = http.createServer(app)
 const wss = new WebSocket.Server({server})
 
 app.use(express.static('public'))
+app.use(bodyParser.json())
+
+function getCommentsPath(imageId) {
+  const basename = path.basename(imageId, path.extname(imageId))
+  return path.join(__dirname, 'public', 'uploads', basename, 'comments.json')
+}
+
+function readComments(commentsPath) {
+  try {
+    return JSON.parse(fs.readFileSync(commentsPath))
+  } catch {
+    return []
+  }
+}
+
+function getUniqueId() {
+  return uuidv4().replace(/-/g, '')
+}
+
+const webSocketConnections = {}
 
 wss.on('connection', function connection(ws, req) {
   const imageId = path.basename(url.parse(req.url).pathname)
@@ -23,6 +44,8 @@ wss.on('connection', function connection(ws, req) {
   const imagePublicPath = path.join('uploads', basename, `image${extname}`)
   const maskPrivatePath = path.join(__dirname, 'public', 'uploads', basename, 'mask.png')
   const maskPublicPath = path.join('uploads', basename, 'mask.png')
+
+  webSocketConnections[imageId] = ws
 
   fs.access(maskPrivatePath, fs.constants.F_OK, function (err) {
     if (!err) {
@@ -38,23 +61,16 @@ wss.on('connection', function connection(ws, req) {
     pic: {
       url: imagePublicPath,
       mask: maskPublicPath,
-      comments: [
-        {
-          id: '123',
-          left: 200,
-          top: 100,
-          message: 'Hello world!',
-          timestamp: new Date()
-        }
-      ]
+      comments: readComments(getCommentsPath(imageId))
     }
   }))
+
   ws.on('message', function message(data) {
     const dimensions = sizeOf(imagePrivatePath)
     const canvas = createCanvas(dimensions.width, dimensions.height)
     const ctx = canvas.getContext('2d')
 
-    const newMaskPath = path.join(__dirname, 'tmp', `${uuidv4().replace(/-/g, '')}.png`)
+    const newMaskPath = path.join(__dirname, 'tmp', `${getUniqueId()}.png`)
     fs.writeFileSync(newMaskPath, data)
 
     // Apply old mask
@@ -89,7 +105,7 @@ app.post('/pic', (req, res) => {
     if (err) {
       return req.status(500).send(err)
     }
-    const imageId = `${uuidv4().replace(/-/g, '')}${path.extname(req.file.originalname)}`
+    const imageId = `${getUniqueId()}${path.extname(req.file.originalname)}`
     const tempPath = path.join(__dirname, req.file.path)
     const extname = path.extname(imageId)
     const basename = path.basename(imageId, extname)
@@ -114,6 +130,41 @@ app.post('/pic', (req, res) => {
       })
     }
   })
+})
+
+app.post('/pic/:imageId/comments', (req, res) => {
+  const imageId = req.params.imageId
+  const commentsPath = getCommentsPath(req.params.imageId)
+  req.body.id = getUniqueId()
+  req.body.timestamp = new Date()
+  try {
+    fs.accessSync(commentsPath)
+    const comments = readComments(commentsPath)
+    comments.push(req.body)
+    fs.writeFileSync(commentsPath, JSON.stringify(comments))
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          event: 'comment',
+          comment: req.body
+        }));
+      }
+    })
+
+    return res.status(200).end()
+  } catch {
+    fs.writeFileSync(commentsPath, JSON.stringify([req.body]))
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          event: 'comment',
+          comment: req.body
+        }));
+      }
+    })
+
+    return res.status(200).end()
+  }
 })
 
 server.listen(process.env.PORT || 3000, () => {
