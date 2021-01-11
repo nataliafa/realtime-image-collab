@@ -106,7 +106,7 @@ function createFormsAndComments(comments) {
 // отображает рисунок
 function drawMask(url) {
   if (!url) return;
-  document.querySelector('.mask').src = url + '?' + Date.now();
+  document.querySelector('.mask').src = url + '?nocache=' + Date.now();
 }
 
 
@@ -393,7 +393,7 @@ function showImage() {
 
 // устанавливает src изображения
 function setSrcImage(link) {
-  document.querySelector('.current-image').src = `${link}?${Date.now()}`;
+  document.querySelector('.current-image').src = `${link}?nocache=${Date.now()}`;
 }
 
 // добавляет изображение
