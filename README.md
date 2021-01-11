@@ -1,23 +1,23 @@
-Клиентская часть сервиса для рецензирования изображений онлайн
+Real-time Image Collaboration: WebSocket, JavaScript Canvas, Node.js
 ===
 
-Сервис предоставляет пользователям следующие возможности:
-+ загружать изображения;
-+ добавлять комментарии к конкретной части изображения;
-+ рисовать поверх изображения.
+The service provides users with the following options:
++ upload images;
++ add comments to a specific part of the image;
++ Draw on top of the image.
 
-А также сервис наделен элементами совместной работы:
-+ загруженное изображение имеет уникальную ссылку, которой можно поделиться;
-+ все пользователи, просматривающие изображение, уведомляются о новых комментариях к нему;
-+ все пользователи, просматривающие изображение в режиме рисования, видят, что рисуют другие пользователи.
+The service is also equipped with collaborative elements:
++ the uploaded image has a unique link that can be shared;
++ all users viewing the image will be notified of new comments on the image
++ all users who view the image in paint mode can see what other users are drawing.
 
-Клиентская часть реализована на JavaScript, Drag & drop изображений, рисование Canvas, DOM, коллективное рисование и комментирование взаимодействие с сервером по websocket
+Client part is implemented on JavaScript, Drag & drop images, Canvas drawing, DOM, collective drawing and commenting interaction with the server via websocket
 
-+ [ссылка на проект](https://natalia-realtime-image-collab.herokuapp.com)
++ [project link](https://natalia-realtime-image-collab.herokuapp.com)
 
-## Интерфейс
+## Interface
 
-![Компоненты](public/images/components.jpg)
+![Components](public/images/components.jpg)
 
 
 
