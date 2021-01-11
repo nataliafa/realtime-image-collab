@@ -34,24 +34,26 @@ function connectWebSocket(id) {
 
       document.querySelector('.current-image').addEventListener('load', () => {
         showCommentsWrap();
+        if (pic.curves) {
+          curves = pic.curves;
+          needsRepaint = true;
+        }
         showCanvas();
-        showMask();
         // сделать размер commnets wrap и canvas как у изображения
         changeSizeCommentsWrap();
         changeSizeCanvas();
-
-        // отрисовываем полученные комментарии и штрихи пользователей
-        drawMask(pic.mask);
       });
 
       if (pic.comments) {
         createFormsAndComments(pic.comments);
       }
 
+
+
     } else if (dataParse.event === "comment") {
       let isExist = false;
-      const comments = document.querySelectorAll('.comment');
 
+      const comments = document.querySelectorAll('.comment');
       comments.forEach(comment => {
         if (comment.dataset.id === dataParse.comment.id) {
           isExist = true;
@@ -63,9 +65,21 @@ function connectWebSocket(id) {
       }
 
       createFormsAndComments([dataParse.comment]);
-    } else if (dataParse.event === "mask") {
-      drawMask(dataParse.url);
+    } else if (dataParse.event === "curve") {
+      let isExist = false;
 
+      curves.forEach(curve => {
+        if (curve.id === dataParse.curve.id) {
+          isExist = true;
+        }
+      })
+
+      if (isExist) {
+        return;
+      }
+
+      curves.push(dataParse.curve);
+      needsRepaint = true;
     } else if (dataParse.event === "error") {
       console.log('Произошла ошибка');
       console.log(event);
@@ -106,13 +120,6 @@ function createFormsAndComments(comments) {
     }
   })
 }
-
-// отображает рисунок
-function drawMask(url) {
-  if (!url) return;
-  document.querySelector('.mask').src = url + '?nocache=' + Date.now();
-}
-
 
 //-----------КОМЕНТАРИИ---------------
 
@@ -421,15 +428,13 @@ function setImage(file) {
   hideImage();
   hideError();
   hideCommentsWrap();
-  hideMask();
+  // hideMask();
   hideCanvas();
   showLoader();
 
   xhr.addEventListener('load', () => {
     if (xhr.status === 200) {
       const data = JSON.parse(xhr.responseText);
-      // console.log(data);
-      // console.log(`Файл ${file.name} сохранен.`);
 
       // меняет в url полученный id
       changeUrl(data.id);
@@ -515,11 +520,6 @@ const canvas = document.createElement('canvas');
 canvas.classList.add('canvas');
 document.querySelector('.app').appendChild(canvas);
 
-const mask = document.createElement('img');
-mask.src = './images/transparent.png';
-mask.classList.add('mask');
-commentsWrap.appendChild(mask);
-
 // делает размер canvas как у изображения
 function changeSizeCanvas() {
   const image = document.querySelector('.current-image');
@@ -536,17 +536,6 @@ function hideCanvas() {
 function showCanvas() {
   document.querySelector('.canvas').style.display = 'block';
 }
-
-// скрывает mask
-function hideMask() {
-  document.querySelector('.mask').style.display = 'none';
-}
-
-// показывает mask
-function showMask() {
-  document.querySelector('.mask').style.display = 'block';
-}
-
 
 const ctx = canvas.getContext('2d');
 let curves = [];
@@ -600,9 +589,7 @@ function makePoint(x, y) {
 }
 
 canvas.addEventListener('mousedown', canvasMouseDown);
-canvas.addEventListener('mouseup', () => {
-  drawing = false
-});
+canvas.addEventListener('mouseup', canvasMouseUp);
 canvas.addEventListener('mouseleave', () => {
   drawing = false
 });
@@ -612,24 +599,33 @@ function canvasMouseDown(event) {
   if (document.querySelector('.draw').dataset.state !== 'selected') return;
   drawing = true;
 
-  const curve = [];
-  curve.color = currentColor;
-
-  curve.push(makePoint(event.offsetX, event.offsetY));
+  const curve = {
+    id: Date.now(),
+    color: currentColor,
+    path: [makePoint(event.offsetX, event.offsetY)]
+  };
   curves.push(curve);
+
   needsRepaint = true;
 }
-
 
 function canvasMouseMove(event) {
   if (document.querySelector('.draw').dataset.state !== 'selected') return;
 
   if (drawing) {
     const point = makePoint(event.offsetX, event.offsetY);
-    curves[curves.length - 1].push(point);
+    curves[curves.length - 1].path.push(point);
     needsRepaint = true;
-    throttledSendMask();
   }
+}
+
+function canvasMouseUp() {
+  drawing = false;
+
+  const xhr = new XMLHttpRequest();
+  xhr.open('POST', `${url}/pic/${getUrlImageId()}/curves`);
+  xhr.setRequestHeader('Content-Type', 'application/json; charset=utf-8');
+  xhr.send(JSON.stringify(curves[curves.length - 1]));
 }
 
 //  Рендер линий
@@ -638,8 +634,8 @@ function repaint() {
   curves.forEach(curve => {
     ctx.strokeStyle = curve.color;
     ctx.fillStyle = curve.color;
-    circle(curve[0]);
-    smoothCurve(curve);
+    circle(curve.path[0]);
+    smoothCurve(curve.path);
   });
 }
 
@@ -651,15 +647,6 @@ function eraseLine() {
     curves.pop();
     needsRepaint = true;
   }
-}
-
-const throttledSendMask = throttleCanvas(sendMaskState, 1000);
-
-function sendMaskState() {
-  canvas.toBlob(function (blob) {
-    webSocket.send(blob);
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
-  });
 }
 
 // посылает данные на сервер не чаще 1 раза в несколько секунд
@@ -688,7 +675,6 @@ function tick() {
 
 tick();
 
-
 //-----------URL---------------
 
 document.querySelector('.menu_copy').addEventListener('click', copyUrl);
@@ -696,7 +682,7 @@ document.querySelector('.menu_copy').addEventListener('click', copyUrl);
 // возвращает id изображения из url
 function getUrlImageId() {
   let imageId = window.location.href.split('?')[1];
-  return imageId ? imageId = imageId.split('=')[1] : false;
+  return imageId ? imageId.split('=')[1] : false;
 }
 
 // изменить id изображения в url
@@ -718,13 +704,10 @@ function copyUrl() {
   // проверка на копирование ссылки
   try {
     const successful = document.execCommand('copy');
-    const msg = successful ? 'successful' : 'unsuccessful';
-    //console.log(`Копирование ссылки ${msg}`);
   } catch (err) {
     console.log(`Ошибка: ${err}`);
   }
 }
-
 
 //-----------МЕНЮ---------------
 
@@ -787,7 +770,6 @@ function checkMenuLengthTick() {
 }
 
 checkMenuLengthTick();
-
 
 //-------- Drag and Drop Menu ----------------
 
@@ -858,7 +840,6 @@ function hideLoader() {
 function showLoader() {
   document.querySelector('.image-loader').style.display = 'block';
 }
-
 
 function start() {
   const imageId = getUrlImageId();
