@@ -81,10 +81,14 @@ wss.on('connection', function connection(ws, req) {
         fs.writeFileSync(maskPrivatePath, canvas.toBuffer('image/png'))
         try {
           fs.accessSync(maskPrivatePath, fs.constants.F_OK)
-          ws.send(JSON.stringify({
-            event: 'mask',
-            url: maskPublicPath
-          }))
+          wss.clients.forEach(function each(client) {
+            if (client.readyState === WebSocket.OPEN) {
+              client.send(JSON.stringify({
+                event: 'mask',
+                url: maskPublicPath
+              }));
+            }
+          })
           fs.rmSync(newMaskPath)
         } catch (e) {
         }
@@ -92,10 +96,14 @@ wss.on('connection', function connection(ws, req) {
     })
   })
   setInterval(function () {
-    ws.send(JSON.stringify({
-      event: 'mask',
-      url: maskPublicPath
-    }))
+    wss.clients.forEach(function each(client) {
+      if (client.readyState === WebSocket.OPEN) {
+        client.send(JSON.stringify({
+          event: 'mask',
+          url: maskPublicPath
+        }));
+      }
+    })
   }, 1000)
 })
 
@@ -134,7 +142,7 @@ app.post('/pic', (req, res) => {
 
 app.post('/pic/:imageId/comments', (req, res) => {
   const imageId = req.params.imageId
-  const commentsPath = getCommentsPath(req.params.imageId)
+  const commentsPath = getCommentsPath(imageId)
   req.body.id = getUniqueId()
   req.body.timestamp = new Date()
   try {
