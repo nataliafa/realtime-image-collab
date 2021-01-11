@@ -13,7 +13,7 @@ The service is also equipped with collaborative elements:
 
 Client part is implemented on JavaScript, Drag & drop images, Canvas drawing, DOM, collective drawing and commenting interaction with the server via websocket.
 
-+ [project link](https://natalia-realtime-image-collab.herokuapp.com)
++ [Demo](https://natalia-realtime-image-collab.herokuapp.com)
 
 ## Interface
 
