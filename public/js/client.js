@@ -1,4 +1,4 @@
-//-----------WEBSOCKET---------------
+//----------- WEBSOCKET ---------------
 
 const url = window.location.origin;
 
@@ -39,7 +39,7 @@ function connectWebSocket(id) {
           needsRepaint = true;
         }
         showCanvas();
-        // сделать размер commnets wrap и canvas как у изображения
+        // make comments wrap and canvas the same size as the image
         changeSizeCommentsWrap();
         changeSizeCanvas();
       });
@@ -47,7 +47,6 @@ function connectWebSocket(id) {
       if (pic.comments) {
         createFormsAndComments(pic.comments);
       }
-
 
 
     } else if (dataParse.event === "comment") {
@@ -86,7 +85,7 @@ function connectWebSocket(id) {
     }
   });
 
-  //	закрываем соединение веб сокет
+  // close the web socket connection
   webSocket.addEventListener('close', event => {
     console.log('Вэбсокет соединение закрыто');
     console.log(event);
@@ -98,14 +97,14 @@ function connectWebSocket(id) {
 
 }
 
-// создает формы с комментариями
+// creates forms with comments
 function createFormsAndComments(comments) {
   comments.forEach(comment => {
     let needCreateNewForm = true;
     const {left, top, message, timestamp, id} = comment;
 
     document.querySelectorAll('.comments__form').forEach(form => {
-      // если уже существует форма с заданными координатами left и top, добавляем сообщение в эту форму
+      // if a form already exists with the coordinates left and top, add a message to that form
       if (+form.dataset.left === left && +form.dataset.top === top) {
         const newComment = addNewComment(message, timestamp, id);
         const commentsBody = form.querySelector('.comments__body');
@@ -121,13 +120,13 @@ function createFormsAndComments(comments) {
   })
 }
 
-//-----------КОМЕНТАРИИ---------------
+//----------- COMMENTS ---------------
 
 const commentsWrap = document.createElement('div');
 document.querySelector('.app').appendChild(commentsWrap);
 commentsWrap.classList.add('comments__wrap');
 
-// показать/ скрыть комментарии 
+// show/hide comments
 document.querySelector('#comments-on').addEventListener('change', openAndCloseForms);
 document.querySelector('#comments-off').addEventListener('change', openAndCloseForms);
 
@@ -145,24 +144,24 @@ function openAndCloseForms() {
 
 document.querySelector('.comments__wrap').addEventListener('click', (event) => addForm(event.offsetX, event.offsetY));
 
-// изменить размер comments wrap
+// resize the wrap
 function changeSizeCommentsWrap() {
   document.querySelector('.comments__wrap').style.display = 'block';
   document.querySelector('.comments__wrap').style.width = `${document.querySelector('.current-image').width}px`;
   document.querySelector('.comments__wrap').style.height = `${document.querySelector('.current-image').height}px`;
 }
 
-// скрыть comments wrap
+// hide comments wrap
 function hideCommentsWrap() {
   document.querySelector('.comments__wrap').style.display = 'none';
 }
 
-// показать comments wrap
+// show the comments wrap
 function showCommentsWrap() {
   document.querySelector('.comments__wrap').style.display = 'block';
 }
 
-// возвращает высоту маркера
+// returns the height of the marker
 function getMarkerHeight() {
   let result;
   if (document.querySelector('.comments__marker-checkbox')) {
@@ -174,7 +173,7 @@ function getMarkerHeight() {
   return result;
 }
 
-// возвращает ширину маркера
+// returns the width of the marker
 function getMarkerWidth() {
   let result;
   if (document.querySelector('.comments__marker-checkbox')) {
@@ -186,7 +185,7 @@ function getMarkerWidth() {
   return result;
 }
 
-// возвращает форму
+// returns the form
 function createForm(coordX, coordY, message, timestamp, id) {
   const form = document.createElement('form');
   form.classList.add('comments__form');
@@ -204,17 +203,17 @@ function createForm(coordX, coordY, message, timestamp, id) {
   const textarea = document.createElement('textarea');
   textarea.classList.add('comments__input');
   textarea.type = "text";
-  textarea.placeholder = "Напишите ответ...";
+  textarea.placeholder = "Write a comment…";
 
   const close = document.createElement('input');
   close.classList.add('comments__close');
   close.type = "button";
-  close.value = "Закрыть";
+  close.value = "Close";
 
   const submit = document.createElement('input');
   submit.classList.add('comments__submit');
   submit.type = "submit";
-  submit.value = "Отправить";
+  submit.value = "Submit";
 
   if (document.querySelector('#comments-off').checked) {
     form.style.display = 'none';
@@ -267,7 +266,7 @@ function createForm(coordX, coordY, message, timestamp, id) {
         loader.remove();
         textarea.value = textarea.placeholder;
       } else {
-        console.log('комментарий не отправлен');
+        console.log('comment has not been sent');
       }
     });
   }
@@ -295,7 +294,7 @@ function addNewComment(message, timestamp, id) {
   return comment;
 }
 
-// если коментарий не взлезает в строку добавляет пробел
+// if the comment does not fit in the line adds a space
 function cutComment(string) {
   if (string.length > 25) {
     let first = string.substring(0, 26);
@@ -306,7 +305,7 @@ function cutComment(string) {
   }
 }
 
-// возращает дату комментария
+// returns the date of the comment
 function getDate(timestamp) {
   const options = {
     day: 'numeric',
@@ -322,7 +321,7 @@ function getDate(timestamp) {
   return dateStr.slice(0, 6) + dateStr.slice(8, 10) + dateStr.slice(11);
 }
 
-// возвращает loader
+// returns loader
 function addLoader() {
   const comment = document.createElement('div');
   comment.classList.add('comment');
@@ -330,7 +329,7 @@ function addLoader() {
   const loader = document.createElement('div');
   loader.classList.add('loader');
 
-  for (i = 0; i < 5; i++) {
+  for (let i = 0; i < 5; i++) {
     const span = document.createElement('span');
     loader.appendChild(span);
   }
@@ -340,7 +339,7 @@ function addLoader() {
   return comment;
 }
 
-// делает переданную форму активной
+// makes the transferred form active
 function makeActiveForm(currentForm) {
   document.querySelectorAll('.comments__form').forEach(form => {
     form.style.zIndex = 5;
@@ -354,11 +353,11 @@ function makeActiveForm(currentForm) {
   currentForm.style.zIndex = 10;
 }
 
-// задает параметры формы
+// sets the form parameters
 function setForm(coordX, coordY, message, timestamp, id) {
   const form = createForm(coordX, coordY, message, timestamp, id);
 
-  // координаты формы
+  // form coordinates
   form.style.left = coordX + 'px';
   form.style.top = coordY + 'px';
   form.dataset.left = coordX;
@@ -368,7 +367,7 @@ function setForm(coordX, coordY, message, timestamp, id) {
   makeActiveForm(form);
 }
 
-// добавляет форму
+// adds a form
 function addForm(coordX, coordY) {
   if (document.querySelector('.comments').dataset.state === 'selected' && document.querySelector('#comments-on').checked) {
     if (event.target.classList.contains('comments__wrap') || event.target.classList.contains('mask')) {
@@ -387,35 +386,35 @@ function addForm(coordX, coordY) {
   }
 }
 
-//-----------ИЗОБРАЖЕНИЕ---------------
+//----------- PICTURE ---------------
 
 createInputUploadImage();
 document.querySelector('.new > input').addEventListener('change', addNewImage, false);
 
-// скрывает изображение
+// hides the image
 function hideImage() {
   document.querySelector('.current-image').style.display = 'none';
 }
 
-// показывает изображение
+// shows the image
 function showImage() {
   document.querySelector('.current-image').style.display = 'block';
 }
 
-// устанавливает src изображения
+// sets the src of the image
 function setSrcImage(link) {
   document.querySelector('.current-image').src = `${link}?nocache=${Date.now()}`;
 }
 
-// добавляет изображение
+// adds an image
 function addNewImage() {
   setImage(this.files[0]);
 }
 
-// устанавливает изображение
+// sets the image
 function setImage(file) {
 
-  // создаем форму для отправки xhr
+  // create a form to send with XMLHttpRequest
   const formData = new FormData();
   formData.append('title', file.name);
   formData.append('image', file);
@@ -424,11 +423,10 @@ function setImage(file) {
   xhr.open('POST', `${url}/pic`);
   xhr.send(formData);
 
-  // скрывает изображение и ошибку, показывает loader 
+  // hides image and error, shows loader
   hideImage();
   hideError();
   hideCommentsWrap();
-  // hideMask();
   hideCanvas();
   showLoader();
 
@@ -436,29 +434,29 @@ function setImage(file) {
     if (xhr.status === 200) {
       const data = JSON.parse(xhr.responseText);
 
-      // меняет в url полученный id
+      // changes the received id in the url
       changeUrl(data.id);
-      // устанавливает url в  режиме поделиться
+      // sets the url in share mode
       setUrl();
-      // подключение к вебсокету по id изображения
+      // connect to a websocket by image id
       connectWebSocket(data.id);
 
     } else {
-      // скрывет loader и показывает ошибку
+      // hides the loader and shows an error
       hideLoader();
       showError();
     }
   });
 }
 
-//--- Input загрузка изображения ------
+//--- Input - loading of the image ------
 
-// создает input для загрузки изображения
+// creates an input to load the image
 function createInputUploadImage() {
   if (document.querySelector('.new > input')) {
     return
   }
-  ;
+
   const input = document.createElement('input');
   input.setAttribute('type', 'file');
   input.setAttribute('class', 'input-image');
@@ -467,7 +465,7 @@ function createInputUploadImage() {
   document.querySelector('.new').appendChild(input);
 }
 
-// вызывает клик на input
+// causes a click on input
 function clickToInput() {
   const input = document.querySelector('.new > input');
   if (input) {
@@ -475,7 +473,7 @@ function clickToInput() {
   }
 }
 
-//-------- Drag and Drop загрузка изображения ----------------
+//-------- Drag and Drop - image loading ----------------
 
 ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
   document.querySelector('.app').addEventListener(eventName, preventDefaults, false)
@@ -491,18 +489,18 @@ function clickToInput() {
 
 document.querySelector('.app').addEventListener('drop', handleDrop, false);
 
-// отменяет действие по умолчанию
+// cancels the default action
 function preventDefaults(e) {
   e.preventDefault();
   e.stopPropagation();
 }
 
-// добавляет обводку экрана
+// adds highlight
 function highlight(e) {
   document.querySelector('.app').classList.add('highlight');
 }
 
-// убирает обводку экрана
+// removes highlight
 function unhighlight(e) {
   document.querySelector('.app').classList.remove('highlight');
 }
@@ -514,25 +512,25 @@ function handleDrop(e) {
   setImage(files[0])
 }
 
-//-----------РИСОВАНИЕ---------------
+//----------- CURVES ---------------
 
 const canvas = document.createElement('canvas');
 canvas.classList.add('canvas');
 document.querySelector('.app').appendChild(canvas);
 
-// делает размер canvas как у изображения
+// makes canvas the same size as the image
 function changeSizeCanvas() {
   const image = document.querySelector('.current-image');
   canvas.width = image.width;
   canvas.height = image.height;
 }
 
-// скрывает canvas
+// hides canvas
 function hideCanvas() {
   document.querySelector('.canvas').style.display = 'none';
 }
 
-// показывает canvas
+// shows canvas
 function showCanvas() {
   document.querySelector('.canvas').style.display = 'block';
 }
@@ -545,7 +543,7 @@ let currentColor = '#6cbe47';
 let drawing = false;
 let needsRepaint = false;
 
-// изменить цвет линии
+// change the line colour
 const colors = document.querySelectorAll('.menu__color');
 for (const color of colors) {
   color.addEventListener('change', (event) => changeColor(color));
@@ -556,20 +554,20 @@ function changeColor(color) {
   currentColor = color.value;
 }
 
-// рисует точку
+// draws a point
 function circle(point) {
   ctx.beginPath();
   ctx.arc(...point, brushRadius / 2, 0, 2 * Math.PI);
   ctx.fill();
 }
 
-// рисует плавную линию между точками
+// draws a smooth line between the points
 function smoothCurveBetween(p1, p2) {
   const cp = p1.map((coord, idx) => (coord + p2[idx]) / 2);
   ctx.quadraticCurveTo(...p1, ...cp);
 }
 
-// рисует плавную линию между множеством точек
+// draws a smooth line between multiple points
 function smoothCurve(points) {
   ctx.beginPath();
   ctx.lineWidth = brushRadius;
@@ -583,7 +581,7 @@ function smoothCurve(points) {
   ctx.stroke();
 }
 
-// задает координаты точки 
+// creates point coordinates
 function makePoint(x, y) {
   return [x, y];
 }
@@ -628,7 +626,7 @@ function canvasMouseUp() {
   xhr.send(JSON.stringify(curves[curves.length - 1]));
 }
 
-//  Рендер линий
+// render curves
 function repaint() {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   curves.forEach(curve => {
@@ -641,25 +639,11 @@ function repaint() {
 
 document.querySelector('.menu__eraser').addEventListener('click', eraseLine);
 
-// стриает последнюю линюю
+// erases the last curve
 function eraseLine() {
   if (curves.length > 0) {
     curves.pop();
     needsRepaint = true;
-  }
-}
-
-// посылает данные на сервер не чаще 1 раза в несколько секунд
-function throttleCanvas(callback, delay) {
-  let isWaiting = false;
-  return function () {
-    if (!isWaiting) {
-      isWaiting = true;
-      setTimeout(() => {
-        callback();
-        isWaiting = false;
-      }, delay);
-    }
   }
 }
 
@@ -675,57 +659,57 @@ function tick() {
 
 tick();
 
-//-----------URL---------------
+//----------- URL ---------------
 
 document.querySelector('.menu_copy').addEventListener('click', copyUrl);
 
-// возвращает id изображения из url
+// returns the image id from the url
 function getUrlImageId() {
   let imageId = window.location.href.split('?')[1];
   return imageId ? imageId.split('=')[1] : false;
 }
 
-// изменить id изображения в url
+// change the image id in the url
 function changeUrl(id) {
   let link = window.location.href.split('?')[0];
   window.location.href = `${link}?imageId=${id}`;
 }
 
-// записывает url в разделе поделиться
+// saves the url in the share section
 function setUrl() {
   document.querySelector('.menu__url').value = window.location.href;
 }
 
-// копирует url в буфер
+// copies the url to the buffer
 function copyUrl() {
-  const url = document.querySelector('.menu__url');
-  url.focus();
-  url.select();
-  // проверка на копирование ссылки
+  const menuUrl = document.querySelector('.menu__url');
+  menuUrl.focus();
+  menuUrl.select();
+  // link copy verification
   try {
-    const successful = document.execCommand('copy');
+    document.execCommand('copy');
   } catch (err) {
     console.log(`Ошибка: ${err}`);
   }
 }
 
-//-----------МЕНЮ---------------
+//----------- MENU ---------------
 
 document.querySelectorAll('.menu > .mode').forEach(item => item.addEventListener('click', onClickMode));
 document.querySelector('.burger').addEventListener('click', menuDefault);
 
-// устанавливает начальное меню
+// show initial menu
 function menuInitial() {
   document.querySelector('.menu').dataset.state = 'initial';
 }
 
-// устанавливает меню по умолчанию
+// show default menu
 function menuDefault() {
   document.querySelector('.menu').dataset.state = 'default';
   document.querySelectorAll('.menu > .mode').forEach(item => item.dataset.state = '');
 }
 
-// устанавливает меню с выбранной категорией
+// show menu with the selected category
 function menuSelected(mode) {
   document.querySelector('.menu').dataset.state = 'selected';
   mode.dataset.state = 'selected';
@@ -742,7 +726,7 @@ function menuSelected(mode) {
   }
 }
 
-// обрабатывает клик на меню
+// handles menu clicks
 function onClickMode(event) {
   const item = event.currentTarget;
 
@@ -753,7 +737,7 @@ function onClickMode(event) {
   }
 }
 
-// если меню не хватает длины
+// if the menu is not long enough
 function checkMenuLength() {
   const menu = document.querySelector('.menu');
   const wrap = document.querySelector('.wrap');
@@ -763,7 +747,7 @@ function checkMenuLength() {
   }
 }
 
-// проверяет корректность отображения меню
+// checks that the menu is displayed correctly
 function checkMenuLengthTick() {
   checkMenuLength();
   window.requestAnimationFrame(checkMenuLengthTick);
@@ -773,10 +757,10 @@ checkMenuLengthTick();
 
 //-------- Drag and Drop Menu ----------------
 
-// передаем в функцию элемент меню
+// pass a menu item to the function
 dragElement(document.querySelector('.menu'));
 
-function dragElement(elmnt) {
+function dragElement(element) {
 
   const wrap = document.querySelector('.wrap');
   let minY, minX, maxX, maxY;
@@ -789,17 +773,17 @@ function dragElement(elmnt) {
     // начальные позиции
     minY = wrap.offsetTop;
     minX = wrap.offsetLeft;
-    maxX = wrap.offsetLeft + wrap.offsetWidth - elmnt.offsetWidth;
-    maxY = wrap.offsetTop + wrap.offsetHeight - elmnt.offsetHeight;
-    shiftX = event.pageX - elmnt.getBoundingClientRect().left - window.pageXOffset;
-    shiftY = event.pageY - elmnt.getBoundingClientRect().top - window.pageYOffset;
+    maxX = wrap.offsetLeft + wrap.offsetWidth - element.offsetWidth;
+    maxY = wrap.offsetTop + wrap.offsetHeight - element.offsetHeight;
+    shiftX = event.pageX - element.getBoundingClientRect().left - window.pageXOffset;
+    shiftY = event.pageY - element.getBoundingClientRect().top - window.pageYOffset;
 
     document.addEventListener('mousemove', drag);
     document.addEventListener('mouseup', drop);
   }
 
   function drag(event) {
-    // новые позиции
+    // new entries
     let x, y;
     x = event.pageX - shiftX;
     y = event.pageY - shiftY;
@@ -807,8 +791,8 @@ function dragElement(elmnt) {
     y = Math.min(y, maxY);
     x = Math.max(x, minX);
     y = Math.max(y, minY);
-    elmnt.style.left = x + 'px';
-    elmnt.style.top = y + 'px';
+    element.style.left = x + 'px';
+    element.style.top = y + 'px';
   }
 
   function drop() {
@@ -817,26 +801,26 @@ function dragElement(elmnt) {
   }
 }
 
-//-----------ERROR---------------
+//----------- ERROR ---------------
 
-// скрывает ошибку
+// hides error
 function hideError() {
   document.querySelector('.error').style.display = 'none';
 }
 
-// показывает ошибку
+// shows error
 function showError() {
   document.querySelector('.error').style.display = 'block';
 }
 
-//-----------LOADER---------------
+//----------- LOADER ---------------
 
-// скрывает loader
+// hides loader
 function hideLoader() {
   document.querySelector('.image-loader').style.display = 'none';
 }
 
-// показывает loader
+// shows loader
 function showLoader() {
   document.querySelector('.image-loader').style.display = 'block';
 }
