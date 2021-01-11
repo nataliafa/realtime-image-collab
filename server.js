@@ -57,6 +57,7 @@ wss.on('connection', function connection(ws, req) {
   })
 
   ws.send(JSON.stringify({
+    imageId: imageId,
     event: 'pic',
     pic: {
       url: imagePublicPath,
@@ -84,6 +85,7 @@ wss.on('connection', function connection(ws, req) {
           wss.clients.forEach(function each(client) {
             if (client.readyState === WebSocket.OPEN) {
               client.send(JSON.stringify({
+                imageId: imageId,
                 event: 'mask',
                 url: maskPublicPath
               }));
@@ -99,6 +101,7 @@ wss.on('connection', function connection(ws, req) {
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({
+          imageId: imageId,
           event: 'mask',
           url: maskPublicPath
         }));
@@ -153,6 +156,7 @@ app.post('/pic/:imageId/comments', (req, res) => {
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({
+          imageId: imageId,
           event: 'comment',
           comment: req.body
         }));
@@ -165,6 +169,7 @@ app.post('/pic/:imageId/comments', (req, res) => {
     wss.clients.forEach(function each(client) {
       if (client.readyState === WebSocket.OPEN) {
         client.send(JSON.stringify({
+          imageId: imageId,
           event: 'comment',
           comment: req.body
         }));

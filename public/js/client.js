@@ -21,6 +21,10 @@ function connectWebSocket(id) {
 
     const dataParse = JSON.parse(event.data);
 
+    if (dataParse.imageId !== getUrlImageId()) {
+      return;
+    }
+
     if (dataParse.event === "pic") {
       const {pic} = dataParse;
 
@@ -551,7 +555,6 @@ let currentColor = '#6cbe47';
 
 let drawing = false;
 let needsRepaint = false;
-let curvesNumberToRemoveNextTime = 0;
 
 // изменить цвет линии
 const colors = document.querySelectorAll('.menu__color');
@@ -625,7 +628,7 @@ function canvasMouseMove(event) {
     const point = makePoint(event.offsetX, event.offsetY);
     curves[curves.length - 1].push(point);
     needsRepaint = true;
-    trottledSendMask();
+    throttledSendMask();
   }
 }
 
@@ -650,7 +653,7 @@ function eraseLine() {
   }
 }
 
-const trottledSendMask = throttleCanvas(sendMaskState, 1000);
+const throttledSendMask = throttleCanvas(sendMaskState, 1000);
 
 function sendMaskState() {
   canvas.toBlob(function (blob) {
